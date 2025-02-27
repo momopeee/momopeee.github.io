@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>山根透のスタエフバトルコラボ</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Yuji+Boku&display=swap');
+
+    body {
+      margin: 0; padding: 0;
+      background: #000;
+      color: #fff;
+      overflow: hidden;
+    }
+
+    /* ======== 音量ボタン ======== */
+    #volumeControl {
+      position: absolute; top: 10px; right: 10px;
+      z-index: 10001;
+      background: rgba(0,0,0,0.5);
+      padding: 5px 10px;
+      border: 2px solid #fff;
+      border-radius: 8px;
+    }
+    #volumeControl button {
+      margin: 2px;
+      cursor: pointer;
+      font-family: "MS Gothic", monospace;
+    }
+
+    /* ======== スタート画面 ======== */
+    #openingScreen {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: url("yamane1.jpg") no-repeat center center;
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 9999;
+    }
+    #openingScreen h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+      font-family: 'Yuji Boku', 'Yu Mincho', serif;
+    }
+    #openingScreen button {
+      padding: 10px 30px;
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    /* ======== スターウォーズ風(1回目) ======== */
+    #starWarsScreen {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: none; overflow: hidden;
+      z-index: 9998;
+    }
+    #starWarsBg {
+      position: absolute; width: 100%; height: 100%;
+      background: url("yamane2.JPG") no-repeat center center;
+      background-size: cover;
+      filter: brightness(0.7);
+    }
+    #scrollText {
+      position: absolute; bottom: -100%;
+      width: 100%;
+      text-align: center;
+      font-size: 4vw;
+      line-height: 1.2;
+      color: #ffeb3b;
+      font-weight: bold;
+      animation: scrollUp 10s linear forwards;
+      padding: 0 10px;
+    }
+    @keyframes scrollUp {
+      0%   { bottom: -100%; }
+      100% { bottom: 100%; }
+    }
+    #skipButton {
+      position: absolute; bottom: 20px; right: 20px;
+      z-index: 999;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background: rgba(0,0,0,0.5);
+      color: #fff;
+      border: 1px solid #fff;
+    }
+
+    /* ======== ゲームコンテナ(バトル画面) ======== */
+    #gameContainer {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      width: 800px; height: 600px;
+      margin: auto; overflow: hidden;
+      border: 20px double #654321;
+      border-radius: 30px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      display: none;
+      z-index: 9997;
+      background: #000;
+    }
+    #battleField {
+      position: relative;
+      width: 100%; height: 100%;
+      background: url("haikei1.jpeg") no-repeat center center;
+      background-size: cover;
+    }
+
+    /* 敵の配置 */
+    #enemyArea {
+      position: absolute; top: 60px; right: 60px;
+      text-align: center;
+    }
+    #enemyImg {
+      max-width: 250px;
+      border: 4px solid #fff;
+      background: #fff;
+      border-radius: 20px;
+      transform: rotate(0deg);
+      transition: transform 0.5s;
+    }
+    #enemyStatus {
+      margin-top: 5px;
+      background: #fff;
+      padding: 10px;
+      color: #000;
+      border: 4px double #000;
+      border-radius: 10px;
+      font-family: "Times New Roman", serif;
+    }
+    .hpBar {
+      width: 180px; height: 10px;
+      background: #ccc;
+      position: relative;
+      margin-top: 5px;
+    }
+    .hpFill {
+      position: absolute; top: 0; left: 0;
+      height: 10px;
+      background: #4caf50;
+      transition: width 0.3s;
+    }
+
+    /* プレイヤーの配置 */
+    #playerArea {
+      position: absolute; bottom: 230px; left: 60px;
+      text-align: center;
+    }
+    #playerImg {
+      max-width: 250px;
+      border: 4px solid #fff;
+      background: #fff;
+      border-radius: 20px;
+      transform: rotate(0deg);
+      transition: transform 0.5s;
+    }
+    #playerStatus {
+      margin-top: 5px;
+      background: #fff;
+      padding: 10px;
+      color: #000;
+      border: 4px double #000;
+      border-radius: 10px;
+      font-family: "Times New Roman", serif;
+    }
+    #playerNameLv {
+      font-size: 16px;
+      font-weight: normal;
+    }
+    #specialGaugeContainer {
+      margin-top: 5px;
+      width: 180px; height: 10px;
+      background: #ccc;
+      position: relative;
+      border: 1px solid #000;
+    }
+    #specialGaugeFill {
+      position: absolute; top: 0; left: 0;
+      height: 10px;
+      background: red;
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    /* コメント欄 */
+    #messageBox {
+      position: absolute; bottom: 0; left: 0;
+      width: 100%; height: 200px;
+      background: #000;
+      color: #fff;
+      border-top: 4px double #fff;
+      box-sizing: border-box;
+      padding: 8px;
+      font-size: 14px;
+      font-family: "MS Gothic", monospace;
+    }
+    #messageText {
+      height: 130px;
+      overflow-y: auto;
+      background: #000;
+    }
+    #commandButtons {
+      margin-top: 5px;
+    }
+    #commandButtons button {
+      margin-right: 8px;
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+      background: #000;
+      color: #fff;
+      border: 2px solid #fff;
+      font-family: "MS Gothic", monospace;
+      position: relative;
+    }
+    #commandButtons button:hover {
+      background: #444;
+    }
+    #specialDisableMark {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 20px; color: red;
+      pointer-events: none;
+    }
+
+    .chatLine {
+      display: flex;
+      margin: 5px;
+    }
+    .left {
+      justify-content: flex-start;
+    }
+    .right {
+      justify-content: flex-end;
+    }
+    .systemLine {
+      justify-content: center;
+    }
+    .bubble {
+      padding: 10px; border-radius: 10px;
+      max-width: 60%; background: #fff; color: #000;
+    }
+    .yamaneBubble {
+      background: #ffe4e1; 
+    }
+    .enemyBubble {
+      background: #f0f8ff; 
+    }
+    .systemBubble {
+      background: #666; 
+      color: #fff;
+    }
+
+    /* 攻撃アニメーション */
+    .attacking {
+      animation: attackMove 0.4s forwards;
+    }
+    @keyframes attackMove {
+      0%   { transform: translate(0,0); }
+      50%  { transform: translate(40px, -20px) scale(1.1); }
+      100% { transform: translate(0,0); }
+    }
+    .shaking {
+      animation: shake 0.4s forwards;
+    }
+    @keyframes shake {
+      0%   { transform: translate(0,0); }
+      20%  { transform: translate(-10px,0); }
+      40%  { transform: translate(10px,0); }
+      60%  { transform: translate(-10px,0); }
+      80%  { transform: translate(10px,0); }
+      100% { transform: translate(0,0); }
+    }
+
+    /* 戦い終了後(kyoman) */
+    #endOverlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: none;
+      background: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 999999;
+    }
+    #endOverlay img {
+      max-width: 80%;
+      border: 5px solid #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #fff;
+      margin-bottom: 20px;
+    }
+    #endOverlay button {
+      padding: 10px 30px;
+      font-size: 20px;
+      cursor: pointer;
+      background: #fff;
+      color: #000;
+      border: 2px solid #000;
+    }
+
+    /* 攻撃メニュー & 特技メニューのポップアップ */
+    .popupMenu {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #333;
+      padding: 20px;
+      border: 3px solid #fff;
+      display: none;
+      z-index: 10000;
+      text-align: center;
+    }
+    .popupMenu button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-family: "MS Gothic", monospace;
+      font-size: 16px;
+    }
+    .bigRedText {
+      font-size: 24px; font-weight: bold; color: red;
+      font-family: 'Yuji Boku', 'Yu Mincho', serif;
+    }
+
+    /* ======= そーそー撃破後の点滅など(前回通り) ======= */
+    .blink-yellow {
+      animation: blinkYellow 0.3s alternate;
+      animation-iteration-count: 10;
+    }
+    @keyframes blinkYellow {
+      0%   { background-color: #000; }
+      100% { background-color: yellow; }
+    }
+    #ug1Overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: none; background: #000;
+      z-index: 100000; overflow: hidden;
+    }
+    #ug1Slide {
+      position: absolute; left: 0; bottom: -100%;
+      width: 100%; height: 200%;
+      background: url("ug1.jpg") no-repeat center center;
+      background-size: cover;
+      animation: slideUp 2s forwards;
+    }
+    @keyframes slideUp {
+      0%   { bottom: -100%; }
+      100% { bottom: 0; }
+    }
+    #ug1ScrollText {
+      position: absolute; bottom: -100%;
+      width: 100%; text-align: center;
+      font-size: 3vw; line-height: 1.6;
+      color: #ffeb3b; font-weight: bold;
+      animation: ug1TextScroll 5s linear forwards;
+      padding: 0 10px;
+    }
+    @keyframes ug1TextScroll {
+      0%   { bottom: -100%; }
+      100% { bottom: 100%; }
+    }
+
+    /* ===========================
+       2回戦目 ゆうじの必殺技
+       (赤点滅, ug2.jpeg, お金が流れる)
+    =========================== */
+    .blink-red {
+      animation: blinkRed 0.3s alternate infinite;
+    }
+    @keyframes blinkRed {
+      0%   { background-color: #000; }
+      100% { background-color: red; }
+    }
+    #yujiKakuhen {
+      position: absolute; top: 0; left: 0; right: 0; 
+      height: 40px; line-height: 40px;
+      background: #ffffcc; /* 薄い黄色 */
+      color: red; /* 文字赤 */
+      border-radius: 10px;
+      text-align: center;
+      font-weight: bold;
+      font-size: 20px;
+      display: none;
+      z-index: 20000;
+      animation: blinkText 0.6s infinite;
+    }
+    @keyframes blinkText {
+      0%   { color: red; }
+      50%  { color: #ffcccc; }
+      100% { color: red; }
+    }
+    #yujiHissatsuFrame {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px; height: 300px;
+      background: url("goldframe.png") no-repeat center center; /* インドの王宮のような金枠 */
+      background-size: cover;
+      display: none;
+      z-index: 20001;
+    }
+    #yujiHissatsuImg {
+      position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px;
+      background: url("ug2.jpeg") no-repeat center center;
+      background-size: cover;
+    }
+    #yujiHissatsuName {
+      position: absolute; top: 55%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 30px; font-weight: bold;
+      color: #ffeb3b; /* ポップな黄色 */
+      font-family: "Impact", sans-serif; /* ポップフォント例 */
+      text-shadow: 2px 2px 2px #000;
+      display: none;
+      z-index: 20002;
+    }
+
+    /* お金が流れる */
+    .moneyFloat {
+      position: absolute;
+      color: #ffd700; /* 金色 */
+      font-size: 16px;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px #000;
+      pointer-events: none;
+      animation: moneyFlow 5s linear forwards;
+    }
+    @keyframes moneyFlow {
+      0%   { transform: translateX(100%); }
+      100% { transform: translateX(-150%); }
+    }
+    /* 2回戦の勝利演出(ug3) などは後述 */
+  </style>
+</head>
+<body>
+
+<!-- 音量ボタン -->
+<div id="volumeControl">
+  <button onclick="setVolume('large')">大きめ</button>
+  <button onclick="setVolume('normal')">普通</button>
+  <button onclick="setVolume('small')">小さめ</button>
+  <button onclick="setVolume('mute')">ミュート</button>
+</div>
+
+<!-- BGM/SE -->
+<audio id="bgmTitle"   src="hazime.mp3" loop></audio>
+<audio id="bgmOpening" src="toru1.mp3"  loop></audio>
+<audio id="bgmBattle"  src="toru.mp3"   loop></audio>
+<audio id="bgmKyoman"  src="kyoman.m4a"></audio>
+<audio id="seAttack"   src="kougeki.mp3"></audio>
+<audio id="seSpecial"  src="kougeki2.mp3"></audio>
+<audio id="seVictory"  src="syouri.mp3"></audio>
+<audio id="keihou"     src="keihou.mp3"></audio>
+<audio id="bgmUg1"     src="ug1.mp3"></audio>
+<audio id="bgmUg2"     src="ug2.m4a" loop></audio>
+<audio id="ug3Bgm"     src="ug3.m4a"></audio> <!-- 1.5倍速再生用 -->
+<audio id="hissatuYuji" src="hissatu1.mp3"></audio>
+
+<!-- スタート画面 -->
+<div id="openingScreen">
+  <h1>山根透のスタエフバトルコラボ</h1>
+  <button onclick="showStarWarsScreen()">スタート</button>
+</div>
+
+<!-- スターウォーズ風(1回目) -->
+<div id="starWarsScreen">
+  <div id="starWarsBg"></div>
+  <div id="scrollText">
+    ファンキーな世の中をあなたはどう生きますか？<br><br>
+    一つの業種を一生涯やる必要がない自由な空気<br><br>
+    嫌な上司に我慢することなく転職できる環境<br><br>
+    大企業が良いとか中小企業がダメだとか<br><br>
+    ステレオタイプの価値観からの開放<br><br>
+    昔の成功体験ばかりを語るバブル世代の衰退<br><br>
+    家族のためにと自分の人生を押し殺す美学からの開放<br><br>
+
+    なんだかワクワクしますね。<br><br>
+    ニヤニヤが止まりません。<br><br>
+
+    ファンキーな世の中ですが<br><br>
+    どう捉えるか、どう生きるかは<br><br>
+    あなた次第なんです。<br><br>
+  </div>
+  <button id="skipButton" onclick="startGame()">SKIP</button>
+</div>
+
+<!-- バトル画面 -->
+<div id="gameContainer">
+  <div id="battleField">
+    <div id="enemyArea">
+      <img id="enemyImg" src="" alt="Enemy">
+      <div id="enemyStatus">
+        <div id="enemyName"></div>
+        <div>HP: <span id="enemyHP"></span></div>
+        <div class="hpBar"><div id="enemyHpFill" class="hpFill"></div></div>
+      </div>
+    </div>
+
+    <div id="playerArea">
+      <img id="playerImg" src="yamane1.jpg" alt="Yamane Toru">
+      <div id="playerStatus">
+        <div id="playerNameLv">とおる (Lv1)</div>
+        <div>HP: <span id="playerHP"></span></div>
+        <div class="hpBar"><div id="playerHpFill" class="hpFill"></div></div>
+        <div id="specialGaugeContainer">
+          <div id="specialGaugeFill"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="messageBox">
+      <div id="messageText"></div>
+      <div id="commandButtons">
+        <button onclick="showAttackMenu()">たたかう</button>
+        <button onclick="showSpecialMenu()">とくぎ<div id="specialDisableMark"></div></button>
+        <button onclick="startBattle()">にげる</button>
+      </div>
+    </div>
+    <!-- ゆうじ確変突入表示(画面上部) -->
+    <div id="yujiKakuhen">ゆうじ確変突入！！！</div>
+    <!-- ゆうじ必殺技の金枠 -->
+    <div id="yujiHissatsuFrame">
+      <div id="yujiHissatsuImg"></div>
+    </div>
+    <!-- 必殺技名 -->
+    <div id="yujiHissatsuName">スタエフのみんな、おらにお金を分けてくれ、、、クラウドファンディング！！！！！</div>
+  </div>
+</div>
+
+<!-- 戦い終了後(kyoman) -->
+<div id="endOverlay">
+  <img id="endOverlayImg" src="kyoman.png" alt="kyoman">
+  <button onclick="returnTitle()">タイトルに戻る</button>
+</div>
+
+<!-- 攻撃メニュー -->
+<div id="attackMenu" class="popupMenu">
+  <h3>攻撃メニュー</h3>
+  <button onclick="chooseAttackOption('漢気')">漢気</button>
+  <button onclick="chooseAttackOption('漢の言葉')">漢の言葉</button>
+  <button onclick="chooseAttackOption('漢の参謀')">漢の参謀</button>
+</div>
+
+<!-- 特技メニュー -->
+<div id="specialMenu" class="popupMenu">
+  <h3>特技メニュー</h3>
+  <button onclick="chooseSpecialOption('とおるの叫び')">とおるの叫び</button>
+  <button onclick="chooseSpecialOption('とおるの魂')">とおるの魂</button>
+</div>
+
+<!-- そーそー撃破後の演出(ug1Overlay) -->
+<div id="ug1Overlay">
+  <div id="ug1Slide"></div>
+  <div id="ug1ScrollText">
+    どーもー<br>
+    陽気なおじさん　でお馴染み<br>
+    ウェディングプランナーのゆうじです<br>
+    やまにい～<br>
+    パッション ですよ パッション<br>
+    パッション と フィーリング でなんとかなりますよ～<br>
+    僕もやまにいと同じコンサルなんで<br>
+    困った時は頼って下さいよ～<br>
+    うぇーい<br>
+  </div>
+</div>
+
+<script>
+/* =============================
+   敵データ(2体: そーそー, ゆうじ)
+============================= */
+let enemies = [
+  {
+    name: "そーそー",
+    chatName: "そーそー",
+    hp: 40,
+    maxHP: 40,
+    img: "teki1.jpeg",
+    attribute: "狂犬的ツイート",
+    profile: "金融系死にかけサラリーマン",
+    attacks: [
+      "消費税一律30%とかにすれば全て解決する",
+      "マジでこいつのフォロワーヤバイ奴しかおらんな",
+      "国民皆保険ごとなくせよバカやろう💢",
+      "貧乏な移民を追い出し、金持ちにビザを買わせる",
+      "真面目に働いていれば万作にはならない",
+      "なかなか一つにまとまらない経済学者がほぼ全員反対するもの: 軽減税率",
+      "老人が全て〇ねば全部解決するのに"
+    ]
+  },
+  {
+    name: "大久保雄治",
+    chatName: "ゆうじ",
+    hp: 60,
+    maxHP: 60,
+    img: "ug1.jpeg", 
+    attribute: "陽気なおじさん",
+    profile: "ウェディングプランナー兼コンサル",
+    attacks: [
+      "しいたけ しか勝たん！！俺はしいたけ占いしか信じてないんすよ～",
+      "年収1000万目指します、まじで",
+      "「やればやるほど、楽しくなっていく」今まさにそんな状態！",
+      "佐川の集荷呼ぶだけでこんなに難しいなんて・・・",
+      "僕は常にかゆいところに手が届く存在でありたい",
+      "2025年以降の目標を立てて、めっちゃワクワクした！",
+      "今日の予定？タイミー"
+    ],
+    // ゆうじの必殺技情報
+    hissatsuName: "スタエフのみんな、おらにお金を分けてくれ、、、クラウドファンディング！！！！！",
+    hissatsuGauge: 0,
+    hissatsuGaugeMax: 20,
+    inKakuhen: false  // 確変状態フラグ
+  }
+];
+
+/* =============================
+   他の変数・音声要素
+============================= */
+let playerLevel = 1;
+let playerMaxHP = 50;
+let playerHP = playerMaxHP;
+
+// とおるの攻撃セリフ
+let playerAttackLines = [
+  "さよならワンマン経営！",
+  "経営チームを作るんだ！",
+  "基礎的人間能力が大事だ！",
+  "短期より中長期の持続可能性！",
+  "光あれば影あり…だが攻める！"
+];
+
+// 1回戦 or 2回戦
+let currentEnemyIndex = 0;
+let enemyHP = 0;
+let enemyMaxHP = 0;
+
+const bgmTitle   = document.getElementById("bgmTitle");
+const bgmOpening = document.getElementById("bgmOpening");
+const bgmBattle  = document.getElementById("bgmBattle");
+const bgmKyoman  = document.getElementById("bgmKyoman");
+const seAttack   = document.getElementById("seAttack");
+const seSpecial  = document.getElementById("seSpecial");
+const seVictory  = document.getElementById("seVictory");
+const keihou     = document.getElementById("keihou");
+const bgmUg1     = document.getElementById("bgmUg1");
+const bgmUg2     = document.getElementById("bgmUg2");
+const ug3Bgm     = document.getElementById("ug3Bgm");
+const hissatuYuji= document.getElementById("hissatuYuji");
+
+// すべての音声要素(音量コントロール)
+const allAudioElements = [
+  bgmTitle, bgmOpening, bgmBattle, bgmKyoman,
+  seAttack, seSpecial, seVictory,
+  keihou, bgmUg1, bgmUg2, ug3Bgm, hissatuYuji
+];
+
+/* =============================
+   onloadでタイトルBGM
+============================= */
+window.onload = function() {
+  bgmTitle.currentTime = 0;
+  bgmTitle.play().catch(e => {});
+};
+
+/* =============================
+   音量ボタン
+============================= */
+function setVolume(level) {
+  let volumeValue = 0.6;
+  switch (level) {
+    case 'large': volumeValue = 1.0; break;
+    case 'normal':volumeValue = 0.6; break;
+    case 'small': volumeValue = 0.3; break;
+    case 'mute':  volumeValue = 0.0; break;
+  }
+  allAudioElements.forEach(a => a.volume = volumeValue);
+}
+
+/* =============================
+   タイトルに戻る
+============================= */
+function returnTitle() {
+  document.getElementById("endOverlay").style.display = "none";
+  document.getElementById("gameContainer").style.display = "none";
+  document.getElementById("starWarsScreen").style.display = "none";
+  document.getElementById("openingScreen").style.display = "flex";
+
+  bgmKyoman.pause();
+  bgmKyoman.currentTime = 0;
+  ug3Bgm.pause();
+  ug3Bgm.currentTime = 0;
+
+  bgmTitle.currentTime = 0;
+  bgmTitle.play().catch(e => {});
+}
+
+/* =============================
+   スターウォーズ風
+============================= */
+function showStarWarsScreen() {
+  document.getElementById("openingScreen").style.display = "none";
+
+  bgmTitle.pause();
+  bgmTitle.currentTime = 0;
+
+  document.getElementById("starWarsScreen").style.display = "block";
+
+  bgmOpening.currentTime = 0;
+  bgmOpening.play().catch(e => {});
+
+  // 8秒後にバトル開始
+  setTimeout(() => {
+    startGame();
+  }, 8000);
+}
+function startGame() {
+  document.getElementById("starWarsScreen").style.display = "none";
+  document.getElementById("gameContainer").style.display = "block";
+
+  bgmOpening.pause();
+  bgmOpening.currentTime = 0;
+
+  bgmBattle.currentTime = 0;
+  bgmBattle.play().catch(e => {});
+
+  startBattle();
+}
+
+/* =============================
+   バトル開始(1回戦)
+============================= */
+function startBattle() {
+  playerHP = playerMaxHP;
+  currentEnemyIndex = 0; // 1回戦(そーそー)
+  setEnemy(currentEnemyIndex);
+
+  updatePlayerInfo();
+
+  document.getElementById("playerImg").style.transform = "rotate(0deg)";
+  document.getElementById("enemyImg").style.transform = "rotate(0deg)";
+
+  // とくぎゲージリセット(とおる側)
+  // 2回戦の敵(ゆうじ)の必殺技ゲージもリセット
+  specialGauge = 0;
+  updateSpecialGauge();
+  enemies[1].hissatsuGauge = 0;
+  enemies[1].inKakuhen = false;
+
+  writeMessageSystem(
+    "バトル開始！\n" + 
+    enemies[currentEnemyIndex].name + "（" + enemies[currentEnemyIndex].attribute + "）があらわれた！"
+  );
+  document.getElementById("playerHP").innerText = playerHP;
+  updateHPBar();
+}
+
+/* =============================
+   敵のセット
+============================= */
+function setEnemy(index) {
+  enemyHP = enemies[index].hp;
+  enemyMaxHP = enemies[index].maxHP;
+  let eImg = document.getElementById("enemyImg");
+  eImg.src = enemies[index].img;
+  eImg.style.transform = "rotate(0deg)";
+
+  document.getElementById("enemyName").innerText = enemies[index].name;
+  document.getElementById("enemyHP").innerText = enemyHP;
+
+  updateHPBar();
+}
+
+/* =============================
+   攻撃メニュー
+============================= */
+function showAttackMenu() {
+  document.getElementById("attackMenu").style.display = "block";
+}
+function chooseAttackOption(option) {
+  document.getElementById("attackMenu").style.display = "none";
+  doAttackAction();
+}
+function doAttackAction() {
+  seAttack.currentTime = 0;
+  seAttack.play();
+
+  increaseSpecialGauge(10); // とおるのゲージ
+
+  let pLine = randomChoice(playerAttackLines);
+  let damage = getRandomInt(5, 10);
+
+  // 2回戦かつ敵が確変中なら「のれんに腕押し」
+  if (currentEnemyIndex === 1 && enemies[1].inKakuhen) {
+    // ダメージ0
+    damage = 0;
+    writeMessageSystem("のれんに腕押し！攻撃を受け流された！");
+  }
+
+  enemyHP -= damage;
+  if (enemyHP < 0) enemyHP = 0;
+  document.getElementById("enemyHP").innerText = enemyHP;
+
+  animateAttack("playerImg", "enemyImg");
+  if (damage > 0) {
+    writeMessageYamane(pLine, damage);
+  }
+
+  if (enemyHP <= 0) {
+    enemyHP = 0;
+    victory();
+  } else {
+    setTimeout(enemyAttack, 1000);
+  }
+  updateHPBar();
+}
+
+/* =============================
+   特技メニュー
+============================= */
+function showSpecialMenu() {
+  document.getElementById("specialMenu").style.display = "block";
+}
+function chooseSpecialOption(option) {
+  document.getElementById("specialMenu").style.display = "none";
+  doSpecialAction();
+}
+function doSpecialAction() {
+  if (specialGauge < specialGaugeMax) {
+    writeMessageSystem("勇気が足りなくて『とくぎ』が使えない…");
+    setTimeout(enemyAttack, 1000);
+    return;
+  }
+  seSpecial.currentTime = 0;
+  seSpecial.play();
+
+  let damage = getRandomInt(10, 20);
+
+  // 2回戦かつ確変中なら「のれんに腕押し」でダメージ0
+  if (currentEnemyIndex === 1 && enemies[1].inKakuhen) {
+    damage = 0;
+    writeMessageSystem("のれんに腕押し！攻撃を受け流された！");
+  }
+
+  enemyHP -= damage;
+  if (enemyHP < 0) enemyHP = 0;
+  document.getElementById("enemyHP").innerText = enemyHP;
+
+  animateAttack("playerImg", "enemyImg");
+  let bigText = `<div class="bigRedText">ううぅぅぉぉぉおおおお！！！漢たるもの背中で語れ！！！！</div>`;
+  if (damage > 0) {
+    writeMessageYamaneSpecial(bigText, damage);
+  }
+
+  specialGauge = 0;
+  updateSpecialGauge();
+
+  if (enemyHP <= 0) {
+    enemyHP = 0;
+    victory();
+  } else {
+    setTimeout(enemyAttack, 1000);
+  }
+  updateHPBar();
+}
+
+/* =============================
+   敵の攻撃(そーそー or ゆうじ)
+============================= */
+function enemyAttack() {
+  let e = enemies[currentEnemyIndex];
+  let atkMsg = randomChoice(e.attacks);
+  let damage = getRandomInt(3, 8);
+
+  // ゆうじの必殺技ゲージを増やす(2回戦のみ)
+  if (currentEnemyIndex === 1) {
+    e.hissatsuGauge += 8; 
+    if (e.hissatsuGauge >= e.hissatsuGaugeMax) {
+      // 必殺技発動
+      e.hissatsuGauge = 0;
+      setTimeout(() => enemyHissatsuYuji(), 200); 
+      return; // ここで処理中断
+    }
+  }
+
+  // プレイヤーにダメージ
+  playerHP -= damage;
+  if (playerHP < 0) playerHP = 0;
+  document.getElementById("playerHP").innerText = playerHP;
+
+  animateAttack("enemyImg", "playerImg");
+  writeMessageEnemy(e.chatName, atkMsg, damage);
+
+  if (playerHP <= 0) {
+    playerHP = 0;
+    defeat();
+  }
+  updateHPBar();
+}
+
+/* =============================
+   ゆうじの必殺技発動
+============================= */
+function enemyHissatsuYuji() {
+  let e = enemies[currentEnemyIndex];
+  // 画面背景を赤点滅
+  let field = document.getElementById("battleField");
+  field.classList.add("blink-red");
+
+  // 画面上部「ゆうじ確変突入！！！」
+  let kakuhen = document.getElementById("yujiKakuhen");
+  kakuhen.style.display = "block";
+
+  // 金枠にug2.jpegを表示
+  let frame = document.getElementById("yujiHissatsuFrame");
+  frame.style.display = "block";
+
+  // 必殺技名を画面中央に表示
+  let nameDiv = document.getElementById("yujiHissatsuName");
+  nameDiv.style.display = "block";
+
+  // 効果音
+  hissatuYuji.currentTime = 0;
+  hissatuYuji.play().catch(e => {});
+
+  // ここでBGMを ug2.m4a に変更
+  bgmBattle.pause();
+  bgmBattle.currentTime = 0;
+  bgmUg2.currentTime = 0;
+  bgmUg2.play().catch(e => {});
+
+  // お金の文字が30~50個ランダムで流れる
+  for (let i = 0; i < getRandomInt(30,50); i++) {
+    spawnMoney();
+  }
+
+  // ゆうじ確変突入
+  e.inKakuhen = true;
+
+  // 5秒後に通常画面へ戻る
+  setTimeout(() => {
+    field.classList.remove("blink-red");
+    kakuhen.style.display = "none";
+    frame.style.display = "none";
+    nameDiv.style.display = "none";
+    // これで必殺技演出終了(確変は続く)
+    // 次にプレイヤーのターン(攻撃 or 特技)へ
+    // ここで敵が勝利したわけではないので、何もせずに待機
+  }, 5000);
+}
+
+/* =============================
+   ゆうじが勝利した場合
+============================= */
+function yujiWinEnding() {
+  // バトルBGM停止
+  bgmUg2.pause();
+  bgmUg2.currentTime = 0;
+
+  // 画面中央にug3.jpegを金の装飾枠内に表示
+  let endHtml = `
+    <div style="
+      width:600px; height:400px;
+      margin:auto; background:url('goldframe.png') no-repeat center center;
+      background-size:cover; position:relative;
+    ">
+      <img src="ug3.jpeg" style="
+        position:absolute; top:20px; left:20px; right:20px; bottom:20px;
+        background-size:cover; width:auto; max-width:560px; max-height:360px;
+      ">
+    </div>
+    <div style="
+      font-size:30px; font-weight:bold; color:#ff1493; /* pop color */
+      text-shadow:2px 2px 2px #000; margin-top:20px;
+    ">
+      ゆうじが勝利した！！<br>
+      とおるは痛風が悪化した
+    </div>
+  `;
+  writeMessageSystem(endHtml);
+
+  // エンディングBGM(ug3.m4a)を1.5倍速再生
+  ug3Bgm.playbackRate = 1.5;
+  ug3Bgm.currentTime = 0;
+  ug3Bgm.play().catch(e => {});
+
+  // 音楽が終わるとkyoman.png & kyoman.m4a
+  ug3Bgm.onended = function() {
+    ug3Bgm.onended = null; // 一度だけ
+    document.getElementById("endOverlay").style.display = "flex";
+    bgmKyoman.currentTime = 0;
+    bgmKyoman.play().catch(e => {});
+  };
+}
+
+/* =============================
+   敗北時(プレイヤーが負け)
+============================= */
+function defeat() {
+  // 2回戦(ゆうじ)の場合、ゆうじが勝利した場合の演出へ
+  if (currentEnemyIndex === 1) {
+    // ゆうじが勝利
+    yujiWinEnding();
+    return;
+  }
+  // 1回戦で負けたら通常の終了
+  writeMessageSystem("とおるはたおれた… 痛風が悪化してしまった...");
+  endBattle();
+}
+
+/* =============================
+   endBattle(kyoman画面)
+============================= */
+function endBattle() {
+  // 全BGM停止
+  bgmBattle.pause(); bgmBattle.currentTime = 0;
+  bgmUg2.pause();    bgmUg2.currentTime = 0;
+  // 3秒後 kyoman
+  setTimeout(() => {
+    document.getElementById("endOverlay").style.display = "flex";
+    bgmKyoman.currentTime = 0;
+    bgmKyoman.play().catch(e => {});
+  },3000);
+}
+
+/* =============================
+   勝利(1回戦 or 2回戦)
+============================= */
+function victory() {
+  let e = enemies[currentEnemyIndex];
+  // BGM停止
+  bgmBattle.pause(); bgmBattle.currentTime = 0;
+  bgmUg2.pause();    bgmUg2.currentTime = 0;
+  // 勝利SE
+  seVictory.currentTime = 0;
+  seVictory.play();
+
+  writeMessageSystem(e.name + "をたおした！\n" + e.profile + "は完全に論破されたようだ。");
+  document.getElementById("enemyImg").style.transform = "rotate(180deg)";
+
+  // レベルアップ
+  playerLevel++;
+  updatePlayerInfo();
+  writeMessageSystem("とおるはレベルがあがった！");
+
+  currentEnemyIndex++;
+  if (currentEnemyIndex < enemies.length) {
+    // そーそー撃破 → 2回戦(ゆうじ)へ
+    if (currentEnemyIndex === 1) {
+      // そーそー演出(前回の点滅+ug1Overlay)
+      setTimeout(() => {
+        seVictory.pause();
+        seVictory.currentTime = 0;
+        startBlinkSequence(); // そーそー撃破後の特別演出
+      }, 2000);
+    }
+  } else {
+    // 全て撃破
+    endBattle();
+  }
+}
+
+/* =============================
+   そーそー撃破後の特別演出
+   (黄色点滅 + keihou + ug1Overlay + 5秒後2回戦)
+============================= */
+function startBlinkSequence() {
+  let gameC = document.getElementById("gameContainer");
+  gameC.classList.add("blink-yellow");
+
+  keihou.currentTime = 0;
+  keihou.play().catch(e => {});
+
+  setTimeout(() => {
+    gameC.classList.remove("blink-yellow");
+    keihou.pause();
+    keihou.currentTime = 0;
+
+    document.getElementById("ug1Overlay").style.display = "block";
+    bgmUg1.currentTime = 0;
+    bgmUg1.play().catch(e => {});
+
+    // 5秒後に2回戦開始
+    setTimeout(() => {
+      document.getElementById("ug1Overlay").style.display = "none";
+      bgmUg1.pause();
+      bgmUg1.currentTime = 0;
+
+      // 2回戦開始(ゆうじ)
+      bgmUg2.currentTime = 0;
+      bgmUg2.play().catch(e => {});
+
+      startSecondBattle();
+    }, 5000);
+  }, 3000);
+}
+
+/* =============================
+   2回戦(ゆうじ)開始
+============================= */
+function startSecondBattle() {
+  setEnemy(currentEnemyIndex);
+  // HP回復するならここで playerHP=playerMaxHP; etc.
+  enemies[1].hissatsuGauge = 0;
+  enemies[1].inKakuhen = false;
+
+  writeMessageSystem("バトル開始！\n" + enemies[currentEnemyIndex].name + "（" + enemies[currentEnemyIndex].attribute + "）があらわれた！");
+  updateHPBar();
+}
+
+/* =============================
+   プレイヤー情報更新
+============================= */
+function updatePlayerInfo() {
+  document.getElementById("playerNameLv").textContent = `とおる (Lv${playerLevel})`;
+  document.getElementById("playerHP").textContent = playerHP;
+}
+
+/* =============================
+   HPバー更新
+============================= */
+function updateHPBar() {
+  let enemyBar = document.getElementById("enemyHpFill");
+  let playerBar = document.getElementById("playerHpFill");
+
+  let eRatio = (enemyHP / enemyMaxHP)*100; if (eRatio<0) eRatio=0;
+  enemyBar.style.width = eRatio + "%";
+
+  let pRatio = (playerHP / playerMaxHP)*100; if (pRatio<0) pRatio=0;
+  playerBar.style.width = pRatio + "%";
+}
+
+/* =============================
+   とくぎゲージ(とおる)
+============================= */
+let specialGauge=0, specialGaugeMax=20;
+function increaseSpecialGauge(val){
+  specialGauge += val;
+  if(specialGauge>specialGaugeMax) specialGauge=specialGaugeMax;
+  updateSpecialGauge();
+}
+function updateSpecialGauge(){
+  let gf=document.getElementById("specialGaugeFill");
+  gf.style.width = (specialGauge/specialGaugeMax)*100+"%";
+  let mark=document.getElementById("specialDisableMark");
+  mark.textContent = (specialGauge<specialGaugeMax) ? "×" : "";
+}
+
+/* =============================
+   チャット表示
+============================= */
+function writeMessageSystem(msg){
+  let msgBox=document.getElementById("messageText");
+  let html=`
+    <div class="chatLine systemLine">
+      <div class="bubble systemBubble">${msg}</div>
+    </div>`;
+  msgBox.innerHTML+=html;
+  msgBox.scrollTop=msgBox.scrollHeight;
+}
+function writeMessageYamane(comment, dmg){
+  let msgBox=document.getElementById("messageText");
+  let html=`
+    <div class="chatLine left">
+      <div class="bubble yamaneBubble">
+        <div style="font-size:14px; font-weight:normal;">とおる</div>
+        <div style="font-size:16px; font-weight:bold;">${comment}</div>
+        <div style="font-size:12px; margin-top:4px;">${dmg}ポイントのダメージ！</div>
+      </div>
+    </div>`;
+  msgBox.innerHTML+=html;
+  msgBox.scrollTop=msgBox.scrollHeight;
+}
+function writeMessageYamaneSpecial(bigText, dmg){
+  let msgBox=document.getElementById("messageText");
+  let html=`
+    <div class="chatLine left">
+      <div class="bubble yamaneBubble">
+        <div style="font-size:14px; font-weight:normal;">とおる</div>
+        <div style="margin:5px 0;">${bigText}</div>
+        <div style="font-size:12px; margin-top:4px;">${dmg}ポイントのダメージ！</div>
+      </div>
+    </div>`;
+  msgBox.innerHTML+=html;
+  msgBox.scrollTop=msgBox.scrollHeight;
+}
+function writeMessageEnemy(chatName, comment, dmg){
+  let msgBox=document.getElementById("messageText");
+  let html=`
+    <div class="chatLine right">
+      <div class="bubble enemyBubble">
+        <div style="font-size:14px; font-weight:normal;">${chatName}</div>
+        <div style="font-size:16px; font-weight:bold;">${comment}</div>
+        <div style="font-size:12px; margin-top:4px;">${dmg}ポイントのダメージ！</div>
+      </div>
+    </div>`;
+  msgBox.innerHTML+=html;
+  msgBox.scrollTop=msgBox.scrollHeight;
+}
+
+/* =============================
+   攻撃アニメーション
+============================= */
+function animateAttack(attackerId, defenderId){
+  let at=document.getElementById(attackerId);
+  let df=document.getElementById(defenderId);
+  at.classList.remove("attacking");
+  df.classList.remove("shaking");
+  void at.offsetWidth; void df.offsetWidth;
+  at.classList.add("attacking");
+  df.classList.add("shaking");
+}
+
+/* =============================
+   汎用乱数
+============================= */
+function getRandomInt(min,max){
+  return Math.floor(Math.random()*(max-min+1))+min;
+}
+function randomChoice(arr){
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+</script>
+</body>
+</html>
